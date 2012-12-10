@@ -6,15 +6,28 @@ module ActiveRecord::Import
   AdapterPath = File.join File.expand_path(File.dirname(__FILE__)), "/active_record/adapters"
 
   # Loads the import functionality for a specific database adapter
-  def self.require_adapter(adapter)
+  def require_adapter(adapter)
     require File.join(AdapterPath,"/abstract_adapter")
-    require File.join(AdapterPath,"/#{adapter}_adapter")
+    require File.join(AdapterPath,"/#{base_adapter(adapter)}_adapter")
   end
 
   # Loads the import functionality for the passed in ActiveRecord connection
-  def self.load_from_connection_pool(connection_pool)
+  def load_from_connection_pool(connection_pool)
     require_adapter connection_pool.spec.config[:adapter]
   end
+
+private
+
+  def base_adapter(adapter)
+    case adapter
+      when "mysqlspatial"  then "mysql"
+      when "mysql2spatial" then "mysql2"
+      when "spatialite"    then "sqlite3"
+      when "postgis"       then "postgresql"
+    end
+  end
+
+  extend self
 end
 
 
